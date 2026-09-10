@@ -172,10 +172,11 @@ export default function Home() {
     setYoutubePage(1);
     setNewsPage(1);
 
-    try {
-      const response = await fetch(
-        "http://127.0.0.1:8000/analyze",
-        {
+
+      try {
+        const API_URL = process.env.NEXT_PUBLIC_API_URL;
+
+        const response = await fetch(`${API_URL}/analyze`, {
           method: "POST",
           headers: {
             "Content-Type": "application/json",
@@ -183,25 +184,25 @@ export default function Home() {
           body: JSON.stringify({
             topic: topic.trim(),
           }),
+        });
+
+        if (!response.ok) {
+          throw new Error("Failed to analyze topic");
         }
-      );
 
-      if (!response.ok) {
-        throw new Error("Failed to analyze topic");
+        const data: AnalysisResult = await response.json();
+
+        setResult(data);
+      } catch (err) {
+        console.error(err);
+        setError(
+          "Could not connect to the backend. Make sure FastAPI is running."
+        );
+      } finally {
+        setLoading(false);
       }
-
-      const data: AnalysisResult = await response.json();
-
-      setResult(data);
-    } catch (err) {
-      console.error(err);
-      setError(
-        "Could not connect to the backend. Make sure FastAPI is running."
-      );
-    } finally {
-      setLoading(false);
     }
-  }
+
 
   return (
     <main className="min-h-screen bg-slate-950 text-white">
@@ -663,7 +664,7 @@ export default function Home() {
                     dataKey="date"
                     stroke="#64748b"
                     tickFormatter={(value) =>
-                      new Date(value).toLocaleDateString(
+                      new Date(String(value)).toLocaleDateString(
                         "en-IN",
                         {
                           day: "2-digit",
@@ -689,7 +690,7 @@ export default function Home() {
                     }}
 
                     labelFormatter={(value) =>
-                      new Date(value).toLocaleDateString(
+                      new Date(String(value)).toLocaleDateString(
                         "en-IN",
                         {
                           day: "2-digit",
