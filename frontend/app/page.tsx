@@ -259,19 +259,19 @@ export default function Home() {
 
         </div>
 
-        <div className="mx-auto mt-6 flex max-w-2xl flex-wrap items-center justify-center gap-3 text-xs text-slate-500">
-          <span className="rounded-full border border-slate-800 bg-slate-900 px-3 py-1.5">
-            Source: YouTube
-          </span>
+      <div className="mx-auto mt-6 flex max-w-2xl flex-wrap items-center justify-center gap-3 text-xs text-slate-500">
+        <span className="rounded-full border border-slate-800 bg-slate-900 px-3 py-1.5">
+          Sources: YouTube + News
+        </span>
 
-          <span className="rounded-full border border-slate-800 bg-slate-900 px-3 py-1.5">
-            Up to 50 videos
-          </span>
+        <span className="rounded-full border border-slate-800 bg-slate-900 px-3 py-1.5">
+          30-day trend analysis
+        </span>
 
-          <span className="rounded-full border border-slate-800 bg-slate-900 px-3 py-1.5">
-            AI-powered insights
-          </span>
-        </div>
+        <span className="rounded-full border border-slate-800 bg-slate-900 px-3 py-1.5">
+          AI-powered insights
+        </span>
+      </div>
 
 
         {/* Error */}
