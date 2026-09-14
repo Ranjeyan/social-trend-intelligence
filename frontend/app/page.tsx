@@ -9,6 +9,14 @@ import {
   YAxis,
   Tooltip,
   ResponsiveContainer,
+  PieChart,
+  Pie,
+  Cell,
+  Legend,
+  BarChart,
+  Bar,
+  ScatterChart,
+  Scatter,
 } from "recharts";
 
 type AnalysisResult = {
@@ -205,73 +213,97 @@ export default function Home() {
 
 
   return (
-    <main className="min-h-screen bg-slate-950 text-white">
-      <div className="mx-auto max-w-6xl px-6 py-16">
+    <main className="min-h-screen bg-[#07090d] text-white">
+      <div className="mx-auto max-w-7xl px-6 py-10 lg:px-8">
 
         {/* Header */}
 
-        <div className="mb-12 text-center">
+        <header className="mb-10">
+          <div className="flex flex-col gap-6 lg:flex-row lg:items-end lg:justify-between">
+            <div>
+              <div className="mb-3 flex items-center gap-2">
+                <span className="h-2 w-2 rounded-full bg-emerald-400 shadow-[0_0_12px_rgba(52,211,153,0.8)]" />
+                <span className="text-xs font-medium uppercase tracking-[0.2em] text-slate-500">
+                  AI Trend Intelligence
+                </span>
+              </div>
 
-          <h1 className="text-4xl font-bold tracking-tight sm:text-5xl">
-            Social Trend Intelligence
-          </h1>
+              <h1 className="text-4xl font-semibold tracking-tight text-white sm:text-5xl">
+                Social Trend
+                <span className="text-slate-500"> Intelligence</span>
+              </h1>
 
-          <p className="mt-4 text-slate-400">
-            Discover what people are talking about and understand
-            emerging trends with AI.
-          </p>
+              <p className="mt-4 max-w-2xl text-base leading-7 text-slate-400">
+                Discover what people are talking about, measure attention,
+                and identify emerging trends across YouTube and News.
+              </p>
+            </div>
 
-        </div>
+            <div className="flex flex-wrap gap-2">
+              <span className="rounded-full border border-slate-800 bg-slate-900/70 px-3 py-1.5 text-xs text-slate-400">
+                YouTube + News
+              </span>
 
+              <span className="rounded-full border border-slate-800 bg-slate-900/70 px-3 py-1.5 text-xs text-slate-400">
+                30-day analysis
+              </span>
+
+              <span className="rounded-full border border-slate-800 bg-slate-900/70 px-3 py-1.5 text-xs text-slate-400">
+                AI insights
+              </span>
+            </div>
+          </div>
+        </header>
 
         {/* Search */}
 
-        <div className="mx-auto flex max-w-2xl gap-3">
+        <section className="mb-10">
+          <div className="rounded-2xl border border-slate-800 bg-slate-950/70 p-2 shadow-2xl shadow-black/20">
+            <div className="flex flex-col gap-2 sm:flex-row">
+              <input
+                type="text"
+                value={topic}
+                onChange={(e) => setTopic(e.target.value)}
+                disabled={loading}
+                onKeyDown={(e) => {
+                  if (e.key === "Enter") {
+                    analyzeTopic();
+                  }
+                }}
+                placeholder="Search a topic, keyword, product, or trend..."
+                className="min-w-0 flex-1 rounded-xl bg-slate-900 px-5 py-4 text-sm text-white outline-none placeholder:text-slate-600 focus:ring-1 focus:ring-slate-700 disabled:cursor-not-allowed disabled:opacity-50"
+              />
 
-          <input
-            type="text"
-            value={topic}
-            onChange={(e) => setTopic(e.target.value)}
-            disabled={loading}
-            onKeyDown={(e) => {
-              if (e.key === "Enter") {
-                analyzeTopic();
-              }
-            }}
-            placeholder="Search a topic..."
-            className="flex-1 rounded-xl border border-slate-700 bg-slate-900 px-5 py-3 outline-none placeholder:text-slate-500 focus:border-indigo-500 disabled:cursor-not-allowed disabled:opacity-50"
-          />
+              <button
+                onClick={analyzeTopic}
+                disabled={loading || !topic.trim()}
+                className="rounded-xl bg-white px-7 py-4 text-sm font-medium text-slate-950 transition hover:bg-slate-200 disabled:cursor-not-allowed disabled:opacity-40"
+              >
+                {loading ? (
+                  <span className="flex items-center justify-center gap-2">
+                    <span className="h-4 w-4 animate-spin rounded-full border-2 border-slate-400 border-t-slate-950" />
+                    Analyzing...
+                  </span>
+                ) : (
+                  "Analyze trend"
+                )}
+              </button>
+            </div>
+          </div>
 
-          <button
-            onClick={analyzeTopic}
-            disabled={loading}
-            className="rounded-xl bg-indigo-600 px-6 py-3 font-medium transition hover:bg-indigo-500 disabled:cursor-not-allowed disabled:opacity-50"
-          >
-            {loading ? (
-              <span className="flex items-center gap-2">
-                <span className="h-4 w-4 animate-spin rounded-full border-2 border-white/30 border-t-white" />
-                Analyzing...
-              </span>
-            ) : (
-              "Analyze"
+          <div className="mt-3 flex items-center justify-between px-1">
+            <p className="text-xs text-slate-600">
+              Search across recent content and generate AI-powered insights.
+            </p>
+
+            {loading && (
+              <div className="flex items-center gap-2 text-xs text-slate-500">
+                <span className="h-2 w-2 animate-pulse rounded-full bg-emerald-400" />
+                Collecting data...
+              </div>
             )}
-          </button>
-
-        </div>
-
-      <div className="mx-auto mt-6 flex max-w-2xl flex-wrap items-center justify-center gap-3 text-xs text-slate-500">
-        <span className="rounded-full border border-slate-800 bg-slate-900 px-3 py-1.5">
-          Sources: YouTube + News
-        </span>
-
-        <span className="rounded-full border border-slate-800 bg-slate-900 px-3 py-1.5">
-          30-day trend analysis
-        </span>
-
-        <span className="rounded-full border border-slate-800 bg-slate-900 px-3 py-1.5">
-          AI-powered insights
-        </span>
-      </div>
+          </div>
+        </section>
 
 
         {/* Error */}
@@ -283,23 +315,144 @@ export default function Home() {
         )}
 
         {loading && (
-          <div className="mx-auto mt-12 max-w-2xl text-center">
-            <div className="rounded-2xl border border-slate-800 bg-slate-900 p-8">
-              <div className="mx-auto h-8 w-8 animate-spin rounded-full border-2 border-slate-700 border-t-indigo-500" />
+            <section className="relative overflow-hidden rounded-2xl border border-slate-800 bg-slate-950 px-6 py-14">
+              {/* Background grid */}
+              <div
+                className="pointer-events-none absolute inset-0 opacity-30"
+                style={{
+                  backgroundImage:
+                    "linear-gradient(#1e293b 1px, transparent 1px), linear-gradient(90deg, #1e293b 1px, transparent 1px)",
+                  backgroundSize: "40px 40px",
+                }}
+              />
 
-              <h3 className="mt-5 text-lg font-semibold">
-                Analyzing "{topic}"
-              </h3>
+              {/* Animated glow */}
+              <div className="pointer-events-none absolute left-1/2 top-1/2 h-64 w-64 -translate-x-1/2 -translate-y-1/2 rounded-full bg-indigo-500/10 blur-3xl" />
 
-              <p className="mt-2 text-sm text-slate-500">
-                Collecting YouTube and news data, then generating AI insights...
-              </p>
-            </div>
-          </div>
-        )}
+              <div className="relative mx-auto max-w-4xl">
+                {/* Status */}
+                <div className="text-center">
+                  <div className="inline-flex items-center gap-2 rounded-full border border-slate-800 bg-slate-900/80 px-3 py-1.5">
+                    <span className="relative flex h-2 w-2">
+                      <span className="absolute inline-flex h-full w-full animate-ping rounded-full bg-emerald-400 opacity-75" />
+                      <span className="relative inline-flex h-2 w-2 rounded-full bg-emerald-400" />
+                    </span>
+
+                    <span className="text-xs font-medium tracking-wide text-slate-400">
+                      LIVE ANALYSIS
+                    </span>
+                  </div>
+
+                  <h3 className="mt-5 text-2xl font-semibold text-white">
+                    Analyzing signals
+                  </h3>
+
+                  <p className="mt-2 text-sm text-slate-500">
+                    Collecting content and detecting patterns across multiple sources
+                  </p>
+                </div>
+
+                {/* Data visualization */}
+                <div className="relative mt-10 h-40 overflow-hidden rounded-xl border border-slate-800 bg-slate-900/60 px-6">
+                  {/* Moving signal line */}
+                  <div className="absolute left-0 right-0 top-1/2 h-px bg-slate-800" />
+
+                  <div className="flex h-full items-center justify-center gap-2">
+                    {[32, 58, 42, 78, 52, 91, 47, 68, 36, 84, 55, 72, 44, 96, 61, 38, 76, 52, 88, 45, 67, 93, 54, 73].map(
+                      (height, index) => (
+                        <div
+                          key={index}
+                          className="flex h-24 flex-1 items-center justify-center"
+                        >
+                          <div
+                            className="w-full max-w-[10px] rounded-full bg-indigo-400/70 animate-pulse"
+                            style={{
+                              height: `${height}%`,
+                              animationDelay: `${index * 70}ms`,
+                              animationDuration: `${900 + (index % 4) * 180}ms`,
+                            }}
+                          />
+                        </div>
+                      )
+                    )}
+                  </div>
+
+                  {/* Scanning line */}
+                  <div className="absolute inset-y-0 left-0 w-px animate-[scan_2.5s_linear_infinite] bg-indigo-400 shadow-[0_0_15px_3px_rgba(129,140,248,0.5)]" />
+                </div>
+
+                {/* Processing stages */}
+                <div className="mt-6 grid gap-3 sm:grid-cols-3">
+                  <div className="rounded-xl border border-slate-800 bg-slate-900/70 p-4">
+                    <div className="flex items-center gap-3">
+                      <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-indigo-500/10">
+                        <span className="text-sm">◉</span>
+                      </div>
+
+                      <div>
+                        <p className="text-xs font-medium text-white">
+                          Collecting
+                        </p>
+                        <p className="text-xs text-slate-500">
+                          YouTube + News
+                        </p>
+                      </div>
+
+                      <span className="ml-auto h-2 w-2 animate-pulse rounded-full bg-indigo-400" />
+                    </div>
+                  </div>
+
+                  <div className="rounded-xl border border-slate-800 bg-slate-900/70 p-4">
+                    <div className="flex items-center gap-3">
+                      <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-emerald-500/10">
+                        <span className="text-sm">◈</span>
+                      </div>
+
+                      <div>
+                        <p className="text-xs font-medium text-white">
+                          Processing
+                        </p>
+                        <p className="text-xs text-slate-500">
+                          Engagement signals
+                        </p>
+                      </div>
+
+                      <span className="ml-auto h-2 w-2 animate-pulse rounded-full bg-emerald-400" />
+                    </div>
+                  </div>
+
+                  <div className="rounded-xl border border-slate-800 bg-slate-900/70 p-4">
+                    <div className="flex items-center gap-3">
+                      <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-purple-500/10">
+                        <span className="text-sm">✦</span>
+                      </div>
+
+                      <div>
+                        <p className="text-xs font-medium text-white">
+                          Intelligence
+                        </p>
+                        <p className="text-xs text-slate-500">
+                          AI trend analysis
+                        </p>
+                      </div>
+
+                      <span className="ml-auto h-2 w-2 animate-pulse rounded-full bg-purple-400" />
+                    </div>
+                  </div>
+                </div>
+
+                {/* Bottom status */}
+                <div className="mt-6 flex items-center justify-center gap-2 text-xs text-slate-600">
+                  <span className="h-1 w-1 rounded-full bg-slate-600" />
+                  <span>Building your trend intelligence report</span>
+                  <span className="h-1 w-1 rounded-full bg-slate-600" />
+                </div>
+              </div>
+            </section>
+          )}
 
         {result && (
-          <section className="rounded-2xl border border-slate-800 bg-slate-900 p-6">
+          <section className="rounded-2xl border border-slate-800/80 bg-slate-950/60 p-6 shadow-xl shadow-black/10">
           <div className="flex items-center justify-between">
             <div>
               <p className="text-sm text-slate-500">
@@ -361,25 +514,87 @@ export default function Home() {
         {result && (
           <div className="mt-12 space-y-8">
 
-            <h2 className="text-2xl font-semibold">
-              Analysis for "{result.topic}"
-            </h2>
+            <div>
+              <p className="text-xs font-medium uppercase tracking-[0.18em] text-slate-600">
+                Analysis report
+              </p>
+              <h2 className="mt-2 text-2xl font-semibold tracking-tight text-white">
+                "{result.topic}"
+              </h2>
+            </div>
 
-            <div className="grid gap-4 sm:grid-cols-3">
-              <Metric
-                label="Total Content"
-                value={formatNumber(result.sources.total_content)}
-              />
+            <div className="grid gap-4 md:grid-cols-3">
+              <div className="group rounded-2xl border border-slate-800 bg-slate-950/60 p-6 transition hover:border-slate-700">
+                <div className="flex items-start justify-between">
+                  <p className="text-sm text-slate-500">Total content</p>
 
-              <Metric
-                label="YouTube Share"
-                value={`${result.sources.youtube_percentage}%`}
-              />
+                  <span className="rounded-lg bg-slate-900 px-2 py-1 text-[10px] uppercase tracking-wider text-slate-500">
+                    30 days
+                  </span>
+                </div>
 
-              <Metric
-                label="News Share"
-                value={`${result.sources.news_percentage}%`}
-              />
+                <p className="mt-5 text-3xl font-semibold tracking-tight text-white">
+                  {formatNumber(result.sources.total_content)}
+                </p>
+
+                <p className="mt-2 text-xs text-slate-600">
+                  YouTube videos + news articles
+                </p>
+              </div>
+
+              <div className="group rounded-2xl border border-slate-800 bg-slate-950/60 p-6 transition hover:border-slate-700">
+                <div className="flex items-start justify-between">
+                  <p className="text-sm text-slate-500">YouTube share</p>
+
+                  <span className="rounded-lg bg-slate-900 px-2 py-1 text-[10px] uppercase tracking-wider text-slate-500">
+                    Video
+                  </span>
+                </div>
+
+                <p className="mt-5 text-3xl font-semibold tracking-tight text-white">
+                  {result.sources.youtube_percentage}%
+                </p>
+
+                <div className="mt-4 h-1.5 overflow-hidden rounded-full bg-slate-900">
+                  <div
+                    className="h-full rounded-full bg-white transition-all"
+                    style={{
+                      width: `${result.sources.youtube_percentage}%`,
+                    }}
+                  />
+                </div>
+
+                <p className="mt-2 text-xs text-slate-600">
+                  {formatNumber(result.sources.youtube_count)} videos analyzed
+                </p>
+              </div>
+
+              <div className="group rounded-2xl border border-slate-800 bg-slate-950/60 p-6 transition hover:border-slate-700">
+                <div className="flex items-start justify-between">
+                  <p className="text-sm text-slate-500">News share</p>
+
+                  <span className="rounded-lg bg-slate-900 px-2 py-1 text-[10px] uppercase tracking-wider text-slate-500">
+                    News
+                  </span>
+                </div>
+
+                <p className="mt-5 text-3xl font-semibold tracking-tight text-white">
+                  {result.sources.news_percentage}%
+                </p>
+
+                <div className="mt-4 h-1.5 overflow-hidden rounded-full bg-slate-900">
+                  <div
+                    className="h-full rounded-full bg-slate-400 transition-all"
+                    style={{
+                      width: `${result.sources.news_percentage}%`,
+                    }}
+                  />
+                </div>
+
+                <p className="mt-2 text-xs text-slate-600">
+                  {formatNumber(result.sources.news_count)} articles analyzed
+                </p>
+              </div>
             </div>
 
             <div className="grid gap-4 sm:grid-cols-2">
@@ -452,7 +667,7 @@ export default function Home() {
               />
             </div>
 
-      <section className="rounded-2xl border border-slate-800 bg-slate-900 p-6">
+      <section className="rounded-2xl border border-slate-800/80 bg-slate-950/60 p-6 shadow-xl shadow-black/10">
         <div className="flex items-center justify-between">
           <div>
             <h3 className="text-lg font-semibold">
@@ -606,17 +821,13 @@ export default function Home() {
         </div>
       </section>
 
-       {/* YouTube Views */}
-
-        {/* 30-Day Trend Activity */}
+      {/* 30-Day Attention Trend */}
 
           <section className="rounded-2xl border border-slate-800 bg-slate-900 p-6">
-
-            <div className="flex items-start justify-between gap-4">
-
+            <div className="flex flex-col gap-4 sm:flex-row sm:items-start sm:justify-between">
               <div>
-                <p className="text-sm text-slate-500">
-                  Trend Activity
+                <p className="text-sm font-medium text-slate-500">
+                  Attention Trend
                 </p>
 
                 <h3 className="mt-2 text-xl font-semibold text-white">
@@ -624,27 +835,25 @@ export default function Home() {
                 </h3>
 
                 <p className="mt-1 text-sm text-slate-500">
-                  YouTube views across the analysis period
+                  How attention around this topic changed across YouTube and News.
                 </p>
               </div>
 
-              <div className="rounded-lg border border-slate-800 bg-slate-950 px-3 py-2">
-                <p className="text-xs text-slate-500">
-                  Analysis Period
-                </p>
+              <div className="flex flex-wrap gap-2">
+                <span className="flex items-center gap-2 rounded-full border border-slate-800 bg-slate-950 px-3 py-1.5 text-xs text-slate-400">
+                  <span className="h-2 w-2 rounded-full bg-indigo-400" />
+                  YouTube views
+                </span>
 
-                <p className="mt-1 text-sm font-semibold text-white">
-                  {result.analysis_period.from} → {result.analysis_period.to}
-                </p>
+                <span className="flex items-center gap-2 rounded-full border border-slate-800 bg-slate-950 px-3 py-1.5 text-xs text-slate-400">
+                  <span className="h-2 w-2 rounded-full bg-emerald-400" />
+                  Content volume
+                </span>
               </div>
-
             </div>
 
-
-            <div className="mt-6 h-80">
-
+            <div className="mt-8 h-80">
               <ResponsiveContainer width="100%" height="100%">
-
                 <LineChart
                   data={result.daily_trend}
                   margin={{
@@ -654,15 +863,17 @@ export default function Home() {
                     bottom: 10,
                   }}
                 >
-
                   <CartesianGrid
                     strokeDasharray="3 3"
                     stroke="#1e293b"
+                    vertical={false}
                   />
 
                   <XAxis
                     dataKey="date"
-                    stroke="#64748b"
+                    stroke="#475569"
+                    tickLine={false}
+                    axisLine={false}
                     tickFormatter={(value) =>
                       new Date(String(value)).toLocaleDateString(
                         "en-IN",
@@ -675,7 +886,21 @@ export default function Home() {
                   />
 
                   <YAxis
-                    stroke="#64748b"
+                    yAxisId="views"
+                    stroke="#475569"
+                    tickLine={false}
+                    axisLine={false}
+                    tickFormatter={(value) =>
+                      formatNumber(Number(value))
+                    }
+                  />
+
+                  <YAxis
+                    yAxisId="content"
+                    orientation="right"
+                    stroke="#475569"
+                    tickLine={false}
+                    axisLine={false}
                     tickFormatter={(value) =>
                       formatNumber(Number(value))
                     }
@@ -685,10 +910,13 @@ export default function Home() {
                     contentStyle={{
                       backgroundColor: "#020617",
                       border: "1px solid #1e293b",
-                      borderRadius: "8px",
+                      borderRadius: "12px",
                       color: "#fff",
                     }}
-
+                    labelStyle={{
+                      color: "#94a3b8",
+                      marginBottom: "6px",
+                    }}
                     labelFormatter={(value) =>
                       new Date(String(value)).toLocaleDateString(
                         "en-IN",
@@ -699,32 +927,614 @@ export default function Home() {
                         }
                       )
                     }
-
-                    formatter={(value) =>
-                      formatNumber(Number(value))
-                    }
+                    formatter={(value, name) => [
+                      formatNumber(Number(value)),
+                      name,
+                    ]}
                   />
 
                   <Line
+                    yAxisId="views"
                     type="monotone"
                     dataKey="youtube_views"
                     name="YouTube Views"
-                    strokeWidth={2}
+                    stroke="#818cf8"
+                    strokeWidth={3}
                     dot={false}
+                    activeDot={{
+                      r: 5,
+                    }}
                   />
 
+                  <Line
+                    yAxisId="content"
+                    type="monotone"
+                    dataKey="total_content"
+                    name="Content Volume"
+                    stroke="#34d399"
+                    strokeWidth={2}
+                    dot={false}
+                    activeDot={{
+                      r: 4,
+                    }}
+                  />
                 </LineChart>
-
               </ResponsiveContainer>
-
             </div>
 
+            <div className="mt-5 grid gap-3 sm:grid-cols-3">
+              <div className="rounded-xl bg-slate-950 p-4">
+                <p className="text-xs text-slate-500">
+                  Total YouTube Views
+                </p>
+
+                <p className="mt-1 text-lg font-semibold text-white">
+                  {formatNumber(result.youtube.analytics.total_views)}
+                </p>
+              </div>
+
+              <div className="rounded-xl bg-slate-950 p-4">
+                <p className="text-xs text-slate-500">
+                  Videos Analyzed
+                </p>
+
+                <p className="mt-1 text-lg font-semibold text-white">
+                  {formatNumber(result.youtube.analytics.total_videos)}
+                </p>
+              </div>
+
+              <div className="rounded-xl bg-slate-950 p-4">
+                <p className="text-xs text-slate-500">
+                  News Articles
+                </p>
+
+                <p className="mt-1 text-lg font-semibold text-white">
+                  {formatNumber(result.news.total_articles)}
+                </p>
+              </div>
+            </div>
           </section>
+
+
+          {/* Source Composition */}
+
+<section className="rounded-2xl border border-slate-800 bg-slate-900 p-6">
+  <div>
+    <p className="text-sm font-medium text-slate-500">
+      Source Composition
+    </p>
+
+    <h3 className="mt-2 text-xl font-semibold text-white">
+      Where the conversation is happening
+    </h3>
+
+    <p className="mt-1 text-sm text-slate-500">
+      Distribution of analyzed content across YouTube and News.
+    </p>
+  </div>
+
+  <div className="mt-6 grid items-center gap-8 lg:grid-cols-2">
+    {/* Donut chart */}
+
+    <div className="h-72">
+      <ResponsiveContainer width="100%" height="100%">
+        <PieChart>
+          <Pie
+            data={[
+              {
+                name: "YouTube",
+                value: result.sources.youtube_count,
+              },
+              {
+                name: "News",
+                value: result.sources.news_count,
+              },
+            ]}
+            cx="50%"
+            cy="50%"
+            innerRadius={75}
+            outerRadius={105}
+            paddingAngle={3}
+            dataKey="value"
+            stroke="none"
+          >
+            <Cell fill="#818cf8" />
+            <Cell fill="#34d399" />
+          </Pie>
+
+          <Tooltip
+            contentStyle={{
+              backgroundColor: "#020617",
+              border: "1px solid #1e293b",
+              borderRadius: "12px",
+              color: "#fff",
+            }}
+            formatter={(value) => [
+              formatNumber(Number(value)),
+              "Items",
+            ]}
+          />
+
+          <Legend
+            verticalAlign="bottom"
+            iconType="circle"
+            wrapperStyle={{
+              color: "#94a3b8",
+              fontSize: "12px",
+            }}
+          />
+        </PieChart>
+      </ResponsiveContainer>
+    </div>
+
+    {/* Source breakdown */}
+
+        <div className="space-y-4">
+          <div className="rounded-xl border border-slate-800 bg-slate-950 p-5">
+            <div className="flex items-center justify-between">
+              <div className="flex items-center gap-3">
+                <span className="h-3 w-3 rounded-full bg-indigo-400" />
+
+                <span className="text-sm font-medium text-slate-300">
+                  YouTube
+                </span>
+              </div>
+
+              <span className="text-lg font-semibold text-white">
+                {result.sources.youtube_percentage}%
+              </span>
+            </div>
+
+            <div className="mt-3 h-2 overflow-hidden rounded-full bg-slate-800">
+              <div
+                className="h-full rounded-full bg-indigo-400"
+                style={{
+                  width: `${result.sources.youtube_percentage}%`,
+                }}
+              />
+            </div>
+
+            <p className="mt-2 text-xs text-slate-500">
+              {formatNumber(result.sources.youtube_count)} videos analyzed
+            </p>
+          </div>
+
+          <div className="rounded-xl border border-slate-800 bg-slate-950 p-5">
+            <div className="flex items-center justify-between">
+              <div className="flex items-center gap-3">
+                <span className="h-3 w-3 rounded-full bg-emerald-400" />
+
+                <span className="text-sm font-medium text-slate-300">
+                  News
+                </span>
+              </div>
+
+              <span className="text-lg font-semibold text-white">
+                {result.sources.news_percentage}%
+              </span>
+            </div>
+
+            <div className="mt-3 h-2 overflow-hidden rounded-full bg-slate-800">
+              <div
+                className="h-full rounded-full bg-emerald-400"
+                style={{
+                  width: `${result.sources.news_percentage}%`,
+                }}
+              />
+            </div>
+
+            <p className="mt-2 text-xs text-slate-500">
+              {formatNumber(result.sources.news_count)} articles analyzed
+            </p>
+          </div>
+
+          <div className="rounded-xl bg-slate-950 p-5">
+            <p className="text-xs text-slate-500">
+              Total content
+            </p>
+
+            <p className="mt-1 text-2xl font-semibold text-white">
+              {formatNumber(result.sources.total_content)}
+            </p>
+
+            <p className="mt-1 text-xs text-slate-500">
+              Across both sources
+            </p>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    {/* Sentiment Distribution */}
+
+      <section className="rounded-2xl border border-slate-800 bg-slate-900 p-6">
+        <div>
+          <p className="text-sm font-medium text-slate-500">
+            Audience Sentiment
+          </p>
+
+          <h3 className="mt-2 text-xl font-semibold text-white">
+            Sentiment across sources
+          </h3>
+
+          <p className="mt-1 text-sm text-slate-500">
+            How YouTube and News discussions are distributed across positive,
+            neutral, and negative sentiment.
+          </p>
+        </div>
+
+        <div className="mt-8 h-80">
+          <ResponsiveContainer width="100%" height="100%">
+            <BarChart
+              data={[
+                {
+                  source: "YouTube",
+                  Positive: result.ai_analysis.sentiment?.youtube.positive ?? 0,
+                  Neutral: result.ai_analysis.sentiment?.youtube.neutral ?? 0,
+                  Negative: result.ai_analysis.sentiment?.youtube.negative ?? 0,
+                },
+                {
+                  source: "News",
+                  Positive: result.ai_analysis.sentiment?.news.positive ?? 0,
+                  Neutral: result.ai_analysis.sentiment?.news.neutral ?? 0,
+                  Negative: result.ai_analysis.sentiment?.news.negative ?? 0,
+                },
+                {
+                  source: "Overall",
+                  Positive: result.ai_analysis.sentiment?.overall.positive ?? 0,
+                  Neutral: result.ai_analysis.sentiment?.overall.neutral ?? 0,
+                  Negative: result.ai_analysis.sentiment?.overall.negative ?? 0,
+                },
+              ]}
+              margin={{ top: 10, right: 10, left: 0, bottom: 10 }}
+            >
+              <CartesianGrid
+                strokeDasharray="3 3"
+                stroke="#1e293b"
+                vertical={false}
+              />
+
+              <XAxis
+                dataKey="source"
+                stroke="#475569"
+                tickLine={false}
+                axisLine={false}
+              />
+
+              <YAxis
+                stroke="#475569"
+                tickLine={false}
+                axisLine={false}
+                domain={[0, 100]}
+                tickFormatter={(value) => `${value}%`}
+              />
+
+              <Tooltip
+                contentStyle={{
+                  backgroundColor: "#020617",
+                  border: "1px solid #1e293b",
+                  borderRadius: "12px",
+                  color: "#fff",
+                }}
+                formatter={(value, name) => [
+                  `${Number(value).toFixed(0)}%`,
+                  name,
+                ]}
+              />
+
+              <Legend
+                verticalAlign="top"
+                align="right"
+                iconType="circle"
+                wrapperStyle={{
+                  color: "#94a3b8",
+                  fontSize: "12px",
+                  paddingBottom: "20px",
+                }}
+              />
+
+              <Bar
+                dataKey="Positive"
+                fill="#34d399"
+                radius={[4, 4, 0, 0]}
+              />
+
+              <Bar
+                dataKey="Neutral"
+                fill="#64748b"
+                radius={[4, 4, 0, 0]}
+              />
+
+              <Bar
+                dataKey="Negative"
+                fill="#f87171"
+                radius={[4, 4, 0, 0]}
+              />
+            </BarChart>
+          </ResponsiveContainer>
+        </div>
+
+        {/* Overall sentiment summary */}
+
+        <div className="mt-5 grid gap-3 sm:grid-cols-3">
+          <div className="rounded-xl bg-slate-950 p-4">
+            <p className="text-xs text-slate-500">
+              Positive
+            </p>
+
+            <p className="mt-1 text-xl font-semibold text-emerald-400">
+              {result.ai_analysis.sentiment?.overall.positive ?? 0}%
+            </p>
+          </div>
+
+          <div className="rounded-xl bg-slate-950 p-4">
+            <p className="text-xs text-slate-500">
+              Neutral
+            </p>
+
+            <p className="mt-1 text-xl font-semibold text-slate-300">
+              {result.ai_analysis.sentiment?.overall.neutral ?? 0}%
+            </p>
+          </div>
+
+          <div className="rounded-xl bg-slate-950 p-4">
+            <p className="text-xs text-slate-500">
+              Negative
+            </p>
+
+            <p className="mt-1 text-xl font-semibold text-red-400">
+              {result.ai_analysis.sentiment?.overall.negative ?? 0}%
+            </p>
+          </div>
+        </div>
+      </section>
+
+      {/* Top Content Ranking */}
+
+      <section className="rounded-2xl border border-slate-800 bg-slate-900 p-6">
+        <div>
+          <p className="text-sm font-medium text-slate-500">
+            Content Performance
+          </p>
+
+          <h3 className="mt-2 text-xl font-semibold text-white">
+            Top YouTube Content
+          </h3>
+
+          <p className="mt-1 text-sm text-slate-500">
+            The most viewed videos driving attention around this topic.
+          </p>
+        </div>
+
+        <div className="mt-8 h-[520px]">
+          <ResponsiveContainer width="100%" height="100%">
+            <BarChart
+              data={result.youtube.analytics.videos
+                .slice()
+                .sort((a, b) => b.views - a.views)
+                .slice(0, 10)
+                .reverse()}
+              layout="vertical"
+              margin={{
+                top: 10,
+                right: 30,
+                left: 10,
+                bottom: 10,
+              }}
+            >
+              <CartesianGrid
+                strokeDasharray="3 3"
+                stroke="#1e293b"
+                horizontal={false}
+              />
+
+              <XAxis
+                type="number"
+                stroke="#475569"
+                tickLine={false}
+                axisLine={false}
+                tickFormatter={(value) =>
+                  formatNumber(Number(value))
+                }
+              />
+
+              <YAxis
+                type="category"
+                dataKey="title"
+                width={220}
+                stroke="#475569"
+                tickLine={false}
+                axisLine={false}
+                tickFormatter={(value) => {
+                  const title = String(value);
+                  return title.length > 32
+                    ? `${title.slice(0, 32)}...`
+                    : title;
+                }}
+              />
+
+              <Tooltip
+                contentStyle={{
+                  backgroundColor: "#020617",
+                  border: "1px solid #1e293b",
+                  borderRadius: "12px",
+                  color: "#fff",
+                }}
+                formatter={(value) => [
+                  formatNumber(Number(value)),
+                  "Views",
+                ]}
+                labelFormatter={(value) => String(value)}
+              />
+
+              <Bar
+                dataKey="views"
+                fill="#818cf8"
+                radius={[0, 6, 6, 0]}
+                barSize={24}
+              />
+            </BarChart>
+          </ResponsiveContainer>
+        </div>
+
+        {/* Top video highlight */}
+
+        {result.youtube.analytics.top_video && (
+          <div className="mt-5 rounded-xl border border-slate-800 bg-slate-950 p-5">
+            <p className="text-xs font-medium uppercase tracking-wider text-slate-500">
+              #1 Most Viewed
+            </p>
+
+            <p className="mt-2 text-sm font-medium text-white">
+              {result.youtube.analytics.top_video.title}
+            </p>
+
+            <p className="mt-1 text-sm text-slate-500">
+              {formatNumber(result.youtube.analytics.top_video.views)} views
+            </p>
+          </div>
+        )}
+      </section>
+
+      {/* Views vs Engagement */}
+
+      <section className="rounded-2xl border border-slate-800 bg-slate-900 p-6">
+        <div>
+          <p className="text-sm font-medium text-slate-500">
+            Content Quality
+          </p>
+
+          <h3 className="mt-2 text-xl font-semibold text-white">
+            Views vs Engagement
+          </h3>
+
+          <p className="mt-1 text-sm text-slate-500">
+            Identify content that combines reach with audience interaction.
+          </p>
+        </div>
+
+        <div className="mt-8 h-96">
+          <ResponsiveContainer width="100%" height="100%">
+            <ScatterChart
+              margin={{
+                top: 20,
+                right: 20,
+                bottom: 20,
+                left: 10,
+              }}
+            >
+              <CartesianGrid
+                strokeDasharray="3 3"
+                stroke="#1e293b"
+              />
+
+              <XAxis
+                type="number"
+                dataKey="views"
+                name="Views"
+                stroke="#475569"
+                tickLine={false}
+                axisLine={false}
+                tickFormatter={(value) =>
+                  formatNumber(Number(value))
+                }
+              />
+
+              <YAxis
+                type="number"
+                dataKey="engagement_rate"
+                name="Engagement"
+                stroke="#475569"
+                tickLine={false}
+                axisLine={false}
+                tickFormatter={(value) => `${value}%`}
+              />
+
+              <Tooltip
+                cursor={{
+                  strokeDasharray: "4 4",
+                  stroke: "#475569",
+                }}
+                contentStyle={{
+                  backgroundColor: "#020617",
+                  border: "1px solid #1e293b",
+                  borderRadius: "12px",
+                  color: "#fff",
+                }}
+                formatter={(value, name) => {
+                  if (name === "Views") {
+                    return [
+                      formatNumber(Number(value)),
+                      "Views",
+                    ];
+                  }
+
+                  return [
+                    `${Number(value).toFixed(2)}%`,
+                    "Engagement",
+                  ];
+                }}
+                labelFormatter={() => ""}
+              />
+
+              <Scatter
+                name="Videos"
+                data={result.youtube.analytics.videos}
+                fill="#818cf8"
+              />
+            </ScatterChart>
+          </ResponsiveContainer>
+        </div>
+
+        <div className="mt-5 grid gap-3 sm:grid-cols-3">
+          <div className="rounded-xl bg-slate-950 p-4">
+            <p className="text-xs text-slate-500">
+              High Reach
+            </p>
+
+            <p className="mt-1 text-sm font-medium text-white">
+              High views
+            </p>
+
+            <p className="mt-1 text-xs text-slate-500">
+              Content reaching a large audience.
+            </p>
+          </div>
+
+          <div className="rounded-xl bg-slate-950 p-4">
+            <p className="text-xs text-slate-500">
+              Strong Engagement
+            </p>
+
+            <p className="mt-1 text-sm font-medium text-white">
+              High interaction
+            </p>
+
+            <p className="mt-1 text-xs text-slate-500">
+              Content generating stronger audience response.
+            </p>
+          </div>
+
+          <div className="rounded-xl bg-slate-950 p-4">
+            <p className="text-xs text-slate-500">
+              Potential Emerging
+            </p>
+
+            <p className="mt-1 text-sm font-medium text-white">
+              Low reach + high engagement
+            </p>
+
+            <p className="mt-1 text-xs text-slate-500">
+              Smaller content with promising engagement.
+            </p>
+          </div>
+        </div>
+      </section>
 
 
       {/* News Coverage */}
 
-      <section className="rounded-2xl border border-slate-800 bg-slate-900 p-6">
+      <section className="rounded-2xl border border-slate-800/80 bg-slate-950/60 p-6 shadow-xl shadow-black/10">
         <div className="flex items-center justify-between">
           <div>
             <h3 className="text-lg font-semibold">
@@ -837,7 +1647,7 @@ export default function Home() {
             </div>
       </section>
 
-<section className="rounded-2xl border border-slate-800 bg-slate-900 p-6">
+<section className="rounded-2xl border border-slate-800/80 bg-slate-950/60 p-6 shadow-xl shadow-black/10">
   <div>
     <h3 className="text-lg font-semibold">Sentiment Analysis</h3>
     <p className="mt-1 text-sm text-slate-500">
@@ -925,7 +1735,7 @@ export default function Home() {
 
           {/* Trend Analysis */}
 
-        <section className="rounded-2xl border border-slate-800 bg-slate-900 p-6">
+        <section className="rounded-2xl border border-slate-800/80 bg-slate-950/60 p-6 shadow-xl shadow-black/10">
           <div className="flex items-center justify-between">
             <div>
               <p className="text-sm text-slate-500">
@@ -1001,7 +1811,7 @@ export default function Home() {
 
             {/* Themes */}
 
-            <section className="rounded-2xl border border-slate-800 bg-slate-900 p-6">
+            <section className="rounded-2xl border border-slate-800/80 bg-slate-950/60 p-6 shadow-xl shadow-black/10">
 
               <h3 className="text-lg font-semibold">
                 Key Themes
@@ -1027,7 +1837,7 @@ export default function Home() {
 
             {/* Emerging Trends */}
 
-            <section className="rounded-2xl border border-slate-800 bg-slate-900 p-6">
+            <section className="rounded-2xl border border-slate-800/80 bg-slate-950/60 p-6 shadow-xl shadow-black/10">
 
               <h3 className="text-lg font-semibold">
                 Emerging Trends
@@ -1050,7 +1860,7 @@ export default function Home() {
 
             {/* Summary */}
 
-            <section className="rounded-2xl border border-slate-800 bg-slate-900 p-6">
+            <section className="rounded-2xl border border-slate-800/80 bg-slate-950/60 p-6 shadow-xl shadow-black/10">
 
               <h3 className="text-lg font-semibold">
                 AI Summary
@@ -1079,7 +1889,7 @@ function Metric({
   value: string;
 }) {
   return (
-    <div className="rounded-2xl border border-slate-800 bg-slate-900 p-6">
+    <div className="rounded-2xl border border-slate-800/80 bg-slate-950/60 p-6 shadow-xl shadow-black/10">
       <p className="text-sm text-slate-500">
         {label}
       </p>
@@ -1087,29 +1897,6 @@ function Metric({
       <p className="mt-2 text-2xl font-bold">
         {value}
       </p>
-    </div>
-  );
-}
-
-
-function Sentiment({
-  label,
-  value,
-}: {
-  label: string;
-  value: number;
-}) {
-  return (
-    <div className="flex items-center justify-between">
-
-      <span className="text-slate-400">
-        {label}
-      </span>
-
-      <span className="font-semibold">
-        {value}%
-      </span>
-
     </div>
   );
 }
