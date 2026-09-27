@@ -145,8 +145,9 @@ export default function Home() {
   const [result, setResult] = useState<AnalysisResult | null>(null);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
-  const [recentTopics, setRecentTopics] = useState<string[]>([]);
   const [trendingTopics, setTrendingTopics] = useState<any[]>([]);
+  const [trendingLoading, setTrendingLoading] = useState(true);
+  const [recentTopics, setRecentTopics] = useState<string[]>([]);
 
   const [youtubePage, setYoutubePage] = useState(1);
   const [newsPage, setNewsPage] = useState(1);
@@ -185,8 +186,10 @@ export default function Home() {
         const data = await response.json();
 
         setTrendingTopics(data.topics || []);
+        setTrendingLoading(false);
       } catch (error) {
         console.error("Trending topics error:", error);
+        setTrendingLoading(false);
       }
     }
 
@@ -416,7 +419,28 @@ async function analyzeWithTopic(selectedTopic: string) {
                 </div>
 
                 <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
-                    {trendingTopics.map((item) => (
+                  {trendingLoading ? (
+                    Array.from({ length: 6 }).map((_, index) => (
+                      <div
+                        key={index}
+                        className="rounded-2xl border border-slate-800 bg-slate-900/60 p-5"
+                      >
+                        <div className="flex items-center justify-between">
+                          <div className="h-5 w-28 animate-pulse rounded bg-slate-800" />
+                          <div className="h-6 w-10 animate-pulse rounded bg-slate-800" />
+                        </div>
+
+                        <div className="mt-3 h-4 w-20 animate-pulse rounded bg-slate-800" />
+
+                        <div className="mt-5 h-2 overflow-hidden rounded-full bg-slate-800">
+                          <div className="h-full w-2/3 animate-pulse rounded-full bg-slate-700" />
+                        </div>
+
+                        <div className="mt-4 h-3 w-36 animate-pulse rounded bg-slate-800" />
+                      </div>
+                    ))
+                  ) : trendingTopics.length > 0 ? (
+                    trendingTopics.map((item) => (
                       <button
                         key={item.topic}
                         onClick={() => analyzeSuggestedTopic(item.topic)}
@@ -453,8 +477,18 @@ async function analyzeWithTopic(selectedTopic: string) {
                           {item.total_views.toLocaleString()} views
                         </div>
                       </button>
-                    ))}
-                  </div>
+                    ))
+                  ) : (
+                    <div className="col-span-full rounded-2xl border border-slate-800 bg-slate-950/70 p-8 text-center">
+                      <p className="text-sm text-slate-400">
+                        Trending topics are temporarily unavailable.
+                      </p>
+                      <p className="mt-1 text-xs text-slate-600">
+                        You can still search for any topic above.
+                      </p>
+                    </div>
+                  )}
+                </div>
               </div>
 
               {/* Intelligence Snapshot */}
