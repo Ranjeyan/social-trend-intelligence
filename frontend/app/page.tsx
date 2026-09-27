@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import {
   LineChart,
   Line,
@@ -145,6 +145,8 @@ export default function Home() {
   const [result, setResult] = useState<AnalysisResult | null>(null);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
+  const [recentTopics, setRecentTopics] = useState<string[]>([]);
+  const [trendingTopics, setTrendingTopics] = useState<any[]>([]);
 
   const [youtubePage, setYoutubePage] = useState(1);
   const [newsPage, setNewsPage] = useState(1);
@@ -168,6 +170,28 @@ export default function Home() {
       negative: 0,
     },
   };
+
+  useEffect(() => {
+    async function loadTrendingTopics() {
+      try {
+        const API_URL = process.env.NEXT_PUBLIC_API_URL;
+
+        const response = await fetch(`${API_URL}/trending`);
+
+        if (!response.ok) {
+          throw new Error("Failed to load trending topics");
+        }
+
+        const data = await response.json();
+
+        setTrendingTopics(data.topics || []);
+      } catch (error) {
+        console.error("Trending topics error:", error);
+      }
+    }
+
+    loadTrendingTopics();
+  }, []);
 
   async function analyzeTopic() {
     if (!topic.trim()) {
@@ -210,6 +234,57 @@ export default function Home() {
         setLoading(false);
       }
     }
+
+    function analyzeSuggestedTopic(selectedTopic: string) {
+      setTopic(selectedTopic);
+      setLoading(true);
+      setError("");
+      setResult(null);
+      setYoutubePage(1);
+      setNewsPage(1);
+
+      analyzeWithTopic(selectedTopic);
+    }
+
+async function analyzeWithTopic(selectedTopic: string) {
+    try {
+      const API_URL = process.env.NEXT_PUBLIC_API_URL;
+
+      const response = await fetch(`${API_URL}/analyze`, {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({
+          topic: selectedTopic,
+        }),
+      });
+
+      if (!response.ok) {
+        throw new Error("Failed to analyze topic");
+      }
+
+      const data: AnalysisResult = await response.json();
+
+      setResult(data);
+
+      setRecentTopics((previous) => {
+        const updated = [
+          selectedTopic,
+          ...previous.filter((item) => item !== selectedTopic),
+        ];
+
+        return updated.slice(0, 5);
+      });
+    } catch (err) {
+      console.error(err);
+      setError(
+        "Could not connect to the backend. Make sure FastAPI is running."
+      );
+    } finally {
+      setLoading(false);
+    }
+  }
 
 
   return (
@@ -314,140 +389,216 @@ export default function Home() {
           </div>
         )}
 
-        {loading && (
-            <section className="relative overflow-hidden rounded-2xl border border-slate-800 bg-slate-950 px-6 py-14">
-              {/* Background grid */}
-              <div
-                className="pointer-events-none absolute inset-0 opacity-30"
-                style={{
-                  backgroundImage:
-                    "linear-gradient(#1e293b 1px, transparent 1px), linear-gradient(90deg, #1e293b 1px, transparent 1px)",
-                  backgroundSize: "40px 40px",
-                }}
-              />
+        {!result && !loading && (
+            <section className="space-y-8">
 
-              {/* Animated glow */}
-              <div className="pointer-events-none absolute left-1/2 top-1/2 h-64 w-64 -translate-x-1/2 -translate-y-1/2 rounded-full bg-indigo-500/10 blur-3xl" />
+              {/* Trending Now */}
 
-              <div className="relative mx-auto max-w-4xl">
-                {/* Status */}
-                <div className="text-center">
-                  <div className="inline-flex items-center gap-2 rounded-full border border-slate-800 bg-slate-900/80 px-3 py-1.5">
-                    <span className="relative flex h-2 w-2">
-                      <span className="absolute inline-flex h-full w-full animate-ping rounded-full bg-emerald-400 opacity-75" />
-                      <span className="relative inline-flex h-2 w-2 rounded-full bg-emerald-400" />
-                    </span>
+              <div>
+                <div className="mb-4 flex items-end justify-between">
+                  <div>
+                    <p className="text-xs font-medium uppercase tracking-[0.18em] text-indigo-400">
+                      Explore
+                    </p>
 
-                    <span className="text-xs font-medium tracking-wide text-slate-400">
-                      LIVE ANALYSIS
-                    </span>
+                    <h2 className="mt-2 text-2xl font-semibold text-white">
+                      Trending now
+                    </h2>
+
+                    <p className="mt-1 text-sm text-slate-500">
+                      Explore topics and generate a full intelligence report.
+                    </p>
                   </div>
 
-                  <h3 className="mt-5 text-2xl font-semibold text-white">
-                    Analyzing signals
-                  </h3>
-
-                  <p className="mt-2 text-sm text-slate-500">
-                    Collecting content and detecting patterns across multiple sources
-                  </p>
+                  <span className="hidden text-xs text-slate-600 sm:block">
+                    Click a topic to analyze
+                  </span>
                 </div>
 
-                {/* Data visualization */}
-                <div className="relative mt-10 h-40 overflow-hidden rounded-xl border border-slate-800 bg-slate-900/60 px-6">
-                  {/* Moving signal line */}
-                  <div className="absolute left-0 right-0 top-1/2 h-px bg-slate-800" />
+                <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
+                    {trendingTopics.map((item) => (
+                      <button
+                        key={item.topic}
+                        onClick={() => analyzeSuggestedTopic(item.topic)}
+                        className="rounded-2xl border border-slate-800 bg-slate-900/60 p-5 text-left transition hover:border-slate-600 hover:bg-slate-900"
+                      >
+                        <div className="flex items-center justify-between">
+                          <h3 className="text-lg font-semibold">
+                            {item.topic}
+                          </h3>
 
-                  <div className="flex h-full items-center justify-center gap-2">
-                    {[32, 58, 42, 78, 52, 91, 47, 68, 36, 84, 55, 72, 44, 96, 61, 38, 76, 52, 88, 45, 67, 93, 54, 73].map(
-                      (height, index) => (
-                        <div
-                          key={index}
-                          className="flex h-24 flex-1 items-center justify-center"
-                        >
+                          <span className="text-xl font-bold">
+                            {Math.round(item.trend_score)}
+                          </span>
+                        </div>
+
+                        <p className="mt-2 text-sm text-slate-400">
+                          {item.trend_status}
+                        </p>
+
+                        <div className="mt-5 h-2 overflow-hidden rounded-full bg-white/10">
                           <div
-                            className="w-full max-w-[10px] rounded-full bg-indigo-400/70 animate-pulse"
+                            className="h-full rounded-full bg-indigo-500 transition-all"
                             style={{
-                              height: `${height}%`,
-                              animationDelay: `${index * 70}ms`,
-                              animationDuration: `${900 + (index % 4) * 180}ms`,
+                              width: `${Math.min(
+                                100,
+                                Math.abs(item.trend_score)
+                              )}%`,
                             }}
                           />
                         </div>
-                      )
-                    )}
-                  </div>
 
-                  {/* Scanning line */}
-                  <div className="absolute inset-y-0 left-0 w-px animate-[scan_2.5s_linear_infinite] bg-indigo-400 shadow-[0_0_15px_3px_rgba(129,140,248,0.5)]" />
+                        <div className="mt-3 text-xs text-slate-500">
+                          {item.total_videos} videos ·{" "}
+                          {item.total_views.toLocaleString()} views
+                        </div>
+                      </button>
+                    ))}
+                  </div>
+              </div>
+
+              {/* Intelligence Snapshot */}
+
+              <div className="grid gap-4 lg:grid-cols-3">
+
+                <div className="rounded-2xl border border-slate-800 bg-slate-950/70 p-6 lg:col-span-2">
+                  <p className="text-xs font-medium uppercase tracking-[0.18em] text-slate-600">
+                    Trend intelligence
+                  </p>
+
+                  <h3 className="mt-3 text-xl font-semibold text-white">
+                    From conversation to insight
+                  </h3>
+
+                  <p className="mt-2 max-w-2xl text-sm leading-6 text-slate-500">
+                    Search any topic and see how attention is evolving across
+                    video, news, engagement and AI-generated signals.
+                  </p>
+
+                  <div className="mt-6 grid gap-3 sm:grid-cols-3">
+                    <div className="rounded-xl bg-slate-900 p-4">
+                      <p className="text-xs text-slate-600">
+                        01
+                      </p>
+
+                      <p className="mt-2 text-sm font-medium text-white">
+                        Discover
+                      </p>
+
+                      <p className="mt-1 text-xs leading-5 text-slate-500">
+                        Find topics gaining attention.
+                      </p>
+                    </div>
+
+                    <div className="rounded-xl bg-slate-900 p-4">
+                      <p className="text-xs text-slate-600">
+                        02
+                      </p>
+
+                      <p className="mt-2 text-sm font-medium text-white">
+                        Measure
+                      </p>
+
+                      <p className="mt-1 text-xs leading-5 text-slate-500">
+                        Compare reach and engagement.
+                      </p>
+                    </div>
+
+                    <div className="rounded-xl bg-slate-900 p-4">
+                      <p className="text-xs text-slate-600">
+                        03
+                      </p>
+
+                      <p className="mt-2 text-sm font-medium text-white">
+                        Understand
+                      </p>
+
+                      <p className="mt-1 text-xs leading-5 text-slate-500">
+                        Let AI identify patterns.
+                      </p>
+                    </div>
+                  </div>
                 </div>
 
-                {/* Processing stages */}
-                <div className="mt-6 grid gap-3 sm:grid-cols-3">
-                  <div className="rounded-xl border border-slate-800 bg-slate-900/70 p-4">
-                    <div className="flex items-center gap-3">
-                      <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-indigo-500/10">
-                        <span className="text-sm">◉</span>
-                      </div>
+                {/* Signal card */}
 
-                      <div>
-                        <p className="text-xs font-medium text-white">
-                          Collecting
-                        </p>
-                        <p className="text-xs text-slate-500">
-                          YouTube + News
-                        </p>
-                      </div>
+                <div className="rounded-2xl border border-slate-800 bg-slate-950/70 p-6">
+                  <div className="flex items-center justify-between">
+                    <p className="text-xs font-medium uppercase tracking-[0.18em] text-slate-600">
+                      Signal snapshot
+                    </p>
 
-                      <span className="ml-auto h-2 w-2 animate-pulse rounded-full bg-indigo-400" />
-                    </div>
+                    <span className="h-2 w-2 rounded-full bg-emerald-400 shadow-[0_0_10px_rgba(52,211,153,0.7)]" />
                   </div>
 
-                  <div className="rounded-xl border border-slate-800 bg-slate-900/70 p-4">
-                    <div className="flex items-center gap-3">
-                      <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-emerald-500/10">
-                        <span className="text-sm">◈</span>
-                      </div>
+                  <p className="mt-6 text-4xl font-semibold text-white">
+                    30
+                  </p>
 
-                      <div>
-                        <p className="text-xs font-medium text-white">
-                          Processing
-                        </p>
-                        <p className="text-xs text-slate-500">
-                          Engagement signals
-                        </p>
-                      </div>
+                  <p className="mt-1 text-sm text-slate-500">
+                    day analysis window
+                  </p>
 
-                      <span className="ml-auto h-2 w-2 animate-pulse rounded-full bg-emerald-400" />
+                  <div className="mt-8 space-y-4">
+                    <div className="flex items-center justify-between">
+                      <span className="text-sm text-slate-500">
+                        YouTube
+                      </span>
+
+                      <span className="text-sm font-medium text-white">
+                        Attention
+                      </span>
+                    </div>
+
+                    <div className="h-1.5 rounded-full bg-slate-800">
+                      <div className="h-full w-[82%] rounded-full bg-indigo-400" />
+                    </div>
+
+                    <div className="flex items-center justify-between">
+                      <span className="text-sm text-slate-500">
+                        News
+                      </span>
+
+                      <span className="text-sm font-medium text-white">
+                        Coverage
+                      </span>
+                    </div>
+
+                    <div className="h-1.5 rounded-full bg-slate-800">
+                      <div className="h-full w-[46%] rounded-full bg-emerald-400" />
                     </div>
                   </div>
-
-                  <div className="rounded-xl border border-slate-800 bg-slate-900/70 p-4">
-                    <div className="flex items-center gap-3">
-                      <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-purple-500/10">
-                        <span className="text-sm">✦</span>
-                      </div>
-
-                      <div>
-                        <p className="text-xs font-medium text-white">
-                          Intelligence
-                        </p>
-                        <p className="text-xs text-slate-500">
-                          AI trend analysis
-                        </p>
-                      </div>
-
-                      <span className="ml-auto h-2 w-2 animate-pulse rounded-full bg-purple-400" />
-                    </div>
-                  </div>
-                </div>
-
-                {/* Bottom status */}
-                <div className="mt-6 flex items-center justify-center gap-2 text-xs text-slate-600">
-                  <span className="h-1 w-1 rounded-full bg-slate-600" />
-                  <span>Building your trend intelligence report</span>
-                  <span className="h-1 w-1 rounded-full bg-slate-600" />
                 </div>
               </div>
+
+              {/* Recently analyzed */}
+
+              {recentTopics.length > 0 && (
+                <div className="rounded-2xl border border-slate-800 bg-slate-950/70 p-6">
+                  <p className="text-xs font-medium uppercase tracking-[0.18em] text-slate-600">
+                    Recent
+                  </p>
+
+                  <h3 className="mt-2 text-lg font-semibold text-white">
+                    Recently analyzed
+                  </h3>
+
+                  <div className="mt-4 flex flex-wrap gap-2">
+                    {recentTopics.map((item) => (
+                      <button
+                        key={item}
+                        onClick={() => analyzeSuggestedTopic(item)}
+                        className="rounded-full border border-slate-800 bg-slate-900 px-4 py-2 text-sm text-slate-400 transition hover:border-slate-700 hover:text-white"
+                      >
+                        {item}
+                        <span className="ml-2 text-slate-600">
+                          →
+                        </span>
+                      </button>
+                    ))}
+                  </div>
+                </div>
+              )}
             </section>
           )}
 
