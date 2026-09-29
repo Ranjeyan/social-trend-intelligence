@@ -22,7 +22,6 @@ import {
   ZAxis,
 } from "recharts";
 
-// Minimal shapes so this file is self-contained; they match AnalysisResult in page.tsx.
 type Daily = {
   date: string;
   youtube_count: number;
