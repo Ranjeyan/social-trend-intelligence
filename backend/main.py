@@ -203,12 +203,10 @@ def get_trending_topics_endpoint():
     except Exception as e:
 
         print(
-            f"Trending topics error: {e}"
+            f"Trending topics error: {repr(e)}"
         )
 
-        return {
-            "topics": []
-        }
+        raise 
 
 
 @app.post("/analyze")
