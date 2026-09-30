@@ -13,6 +13,7 @@ from analytics import (
 )
 from gemini_service import analyze_content
 from news_service import search_news
+from trending_service import get_trending_topics
 
 
 app = FastAPI(
@@ -96,53 +97,118 @@ def select_content_for_ai(videos, statistics, news_articles):
 
 
 @app.get("/trending")
-def get_trending_topics():
-    topics = [
-        "AI Agents",
-        "F1",
-        "iPhone",
-        "Bitcoin",
-        "OpenAI",
-        "Cricket"
-    ]
+def get_trending_topics_endpoint():
 
-    trending = []
+    try:
 
-    for topic in topics:
-        try:
-            today = date.today()
-            thirty_days_ago = today - timedelta(days=30)
-            tomorrow = today + timedelta(days=1)
+        # --------------------------------
+        # Get real-time Google Trends
+        # --------------------------------
 
-            published_after = f"{thirty_days_ago.isoformat()}T00:00:00Z"
-            published_before = f"{tomorrow.isoformat()}T00:00:00Z"
+        topics = get_trending_topics(
+            limit=10
+        )
 
-            videos = search_youtube(
-                topic,
-                published_after=published_after,
-                published_before=published_before,
-                max_pages=2
-            )
+        trending = []
 
-            video_ids = [video["video_id"] for video in videos]
-            statistics = get_video_statistics(video_ids)
+        today = date.today()
 
-            analytics = calculate_analytics(videos, statistics)
+        thirty_days_ago = (
+            today - timedelta(days=30)
+        )
 
-            trending.append({
-                "topic": topic,
-                "trend_score": analytics["trend_score"],
-                "trend_status": analytics["trend_status"],
-                "total_videos": analytics["total_videos"],
-                "total_views": analytics["total_views"]
-            })
+        tomorrow = (
+            today + timedelta(days=1)
+        )
 
-        except Exception as e:
-            print(f"Trending error for {topic}: {e}")
+        published_after = (
+            f"{thirty_days_ago.isoformat()}T00:00:00Z"
+        )
 
-    return {
-        "topics": trending
-    }
+        published_before = (
+            f"{tomorrow.isoformat()}T00:00:00Z"
+        )
+
+        # --------------------------------
+        # Analyze each trending topic
+        # --------------------------------
+
+        for topic in topics:
+
+            try:
+
+                videos = search_youtube(
+                    topic,
+                    published_after=published_after,
+                    published_before=published_before,
+                    max_pages=2
+                )
+
+                if not videos:
+                    continue
+
+                video_ids = [
+                    video["video_id"]
+                    for video in videos
+                ]
+
+                statistics = get_video_statistics(
+                    video_ids
+                )
+
+                analytics = calculate_analytics(
+                    videos,
+                    statistics
+                )
+
+                trending.append({
+
+                    "topic": topic,
+
+                    "trend_score": analytics[
+                        "trend_score"
+                    ],
+
+                    "trend_status": analytics[
+                        "trend_status"
+                    ],
+
+                    "total_videos": analytics[
+                        "total_videos"
+                    ],
+
+                    "total_views": analytics[
+                        "total_views"
+                    ]
+
+                })
+
+            except Exception as e:
+
+                print(
+                    f"Trending analysis error "
+                    f"for '{topic}': {e}"
+                )
+
+                continue
+
+        # --------------------------------
+        # Return results
+        # --------------------------------
+
+        return {
+            "topics": trending
+        }
+
+    except Exception as e:
+
+        print(
+            f"Trending topics error: {e}"
+        )
+
+        return {
+            "topics": []
+        }
 
 
 @app.post("/analyze")
