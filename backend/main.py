@@ -1,5 +1,5 @@
 from datetime import date, timedelta
-
+import time
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 from pydantic import BaseModel
@@ -19,6 +19,14 @@ from trending_service import get_trending_topics
 app = FastAPI(
     title="Social Trend Intelligence API"
 )
+
+trending_cache = {
+    "topics": [],
+    "updated_at": 0
+}
+
+TRENDING_CACHE_SECONDS = 600
+
 
 
 app.add_middleware(
@@ -99,105 +107,42 @@ def select_content_for_ai(videos, statistics, news_articles):
 @app.get("/trending")
 def get_trending_topics_endpoint():
 
-    try:
+    global trending_cache
 
-        # --------------------------------
-        # Get real-time Google Trends
-        # --------------------------------
+    now = time.time()
+
+    # Return cached results
+    if (
+        trending_cache["topics"]
+        and now - trending_cache["updated_at"]
+        < TRENDING_CACHE_SECONDS
+    ):
+        return {
+            "topics": trending_cache["topics"],
+            "cached": True
+        }
+
+    try:
 
         topics = get_trending_topics(
             limit=10
         )
 
-        trending = []
+        formatted_topics = [
+            {
+                "topic": topic
+            }
+            for topic in topics
+        ]
 
-        today = date.today()
-
-        thirty_days_ago = (
-            today - timedelta(days=30)
-        )
-
-        tomorrow = (
-            today + timedelta(days=1)
-        )
-
-        published_after = (
-            f"{thirty_days_ago.isoformat()}T00:00:00Z"
-        )
-
-        published_before = (
-            f"{tomorrow.isoformat()}T00:00:00Z"
-        )
-
-        # --------------------------------
-        # Analyze each trending topic
-        # --------------------------------
-
-        for topic in topics:
-
-            try:
-
-                videos = search_youtube(
-                    topic,
-                    published_after=published_after,
-                    published_before=published_before,
-                    max_pages=2
-                )
-
-                if not videos:
-                    continue
-
-                video_ids = [
-                    video["video_id"]
-                    for video in videos
-                ]
-
-                statistics = get_video_statistics(
-                    video_ids
-                )
-
-                analytics = calculate_analytics(
-                    videos,
-                    statistics
-                )
-
-                trending.append({
-
-                    "topic": topic,
-
-                    "trend_score": analytics[
-                        "trend_score"
-                    ],
-
-                    "trend_status": analytics[
-                        "trend_status"
-                    ],
-
-                    "total_videos": analytics[
-                        "total_videos"
-                    ],
-
-                    "total_views": analytics[
-                        "total_views"
-                    ]
-
-                })
-
-            except Exception as e:
-
-                print(
-                    f"Trending analysis error "
-                    f"for '{topic}': {e}"
-                )
-
-                continue
-
-        # --------------------------------
-        # Return results
-        # --------------------------------
+        trending_cache = {
+            "topics": formatted_topics,
+            "updated_at": now
+        }
 
         return {
-            "topics": trending
+            "topics": formatted_topics,
+            "cached": False
         }
 
     except Exception as e:
@@ -206,7 +151,19 @@ def get_trending_topics_endpoint():
             f"Trending topics error: {repr(e)}"
         )
 
-        raise 
+        # If Google Trends temporarily fails,
+        # return previous cached data if available.
+
+        if trending_cache["topics"]:
+
+            return {
+                "topics": trending_cache["topics"],
+                "cached": True
+            }
+
+        return {
+            "topics": []
+        }
 
 
 @app.post("/analyze")
